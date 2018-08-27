@@ -1,0 +1,6 @@
+## Interface: 80000
+## Title: LootSpecDesignator
+## Author: Gnidleif
+## Version: 0.1
+
+LootSpecDesignator.lua

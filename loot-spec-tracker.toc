@@ -1,4 +1,0 @@
-## Interface: 80000
-## Title: LootSpecTracker
-## Author: Gnidleif
-## Version: 0.1

@@ -1,0 +1,1 @@
+message('loot spec designator')
