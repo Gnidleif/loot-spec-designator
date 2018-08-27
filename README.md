@@ -1,4 +1,4 @@
-# loot-spec-tracker
+# loot-spec-designator
 Addon for World of Warcraft used to manage loot specialization options
 
 ## features
