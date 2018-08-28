@@ -1,6 +1,5 @@
-local this = CreateFrame('frame')
-
 --- Variables
+local this = CreateFrame('frame')
 this.specs = {} -- table containing available specs where [name] = id
 this.instances = {} -- table containing available instances where [tier][type][name] = id
 
@@ -52,18 +51,17 @@ function this.init_instances()
         EJ_SelectTier(tier)
         local instances = {}
         local i = 1
-        while (true) do
-            local id, name = EJ_GetInstanceByIndex(i, is_raid)
-            if (not id) then
-                break
-            end
+        local id, name = EJ_GetInstanceByIndex(i, is_raid)
+        -- NOTE: not sure if "~= nil" is needed here
+        while (id) do
             instances[name] = id
             i = i + 1
+            id, name = EJ_GetInstanceByIndex(i, is_raid)
         end
         return instances
     end
     -- for loop that iterates each tier
-    for i = 1, EJ_GetNumTiers() do
+    for i = 1, EJ_GetNumTiers(), 1 do
         local tier = EJ_GetTierInfo(i)
         this.instances[tier] = {
             raids = by_tier(i, true),
@@ -78,15 +76,19 @@ function this.SlashCommandHandler(cmd)
     if (not cmd) then
         this.help()
     end
+    -- make cmd lower case
     cmd = string.lower(cmd)
+    -- emulates a CLI by finding characters and adding them to a list of args which are then sent to the functions
     local args = {}
     for w in cmd:gmatch("%S+") do
         table.insert(args, w)
     end
+    -- if args[1] exists, it's always the name of the function
     local func = this.functions[args[1]]
     if (func) then
         func(args)
     else
+        -- defaults to calling the help function if user tries to call non-existant function
         this.help()
     end
 end
