@@ -1,3 +1,4 @@
+--[[ ADDON LOGIC ]]
 --- Variables
 local this = CreateFrame('frame')
 this.specs = {} -- table containing available specs where [name] = id
@@ -61,7 +62,7 @@ function this.init_instances()
         return instances
     end
     -- for loop that iterates each tier
-    for i = 1, EJ_GetNumTiers(), 1 do
+    for i = 1, EJ_GetNumTiers() do
         local tier = EJ_GetTierInfo(i)
         this.instances[tier] = {
             raids = by_tier(i, true),
@@ -110,5 +111,22 @@ this:SetScript("OnEvent", function(self, event)
 end)
 
 --- Slash recognition
-SlashCmdList["LOOTSPECDESIGNATOR"] = this.SlashCommandHandler
 SLASH_LOOTSPECDESIGNATOR1 = "/lsd"
+SlashCmdList["LOOTSPECDESIGNATOR"] = this.SlashCommandHandler
+
+SLASH_RELOADUI1 = "/rl"
+SlashCmdList.RELOADUI = ReloadUI
+
+--[[
+SLASH_FRAMESTK1 = "/fs"
+SlashCmdList.FrameSTK = function()
+  LoadAddon('Blizzard_DebugTools')
+  FrameStackTooltip_Toggle()
+end
+
+for i = 1, NUM_CHAT_WINDOWS do
+  _G["ChatFrame"..i.."EditBox"]:SetAltArrowKeyMode(false)
+end
+]]
+
+-- [[ ADDON UI ]]
