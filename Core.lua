@@ -6,13 +6,13 @@ this.instances = {} -- table containing available instances where [tier][type][n
 
 --- Exported functions
 -- help prints a list of helpful tips on how to use the addon
-function this.help(args)
+function this:help(args)
     print("/lsd - brings up this help")
     print("/lsd mode [name] - switch loot spec to [name], leave empty to match spec")
 end
 
 -- set_mode changes the current loot spec
-function this.set_mode(args)
+function this:set_mode(args)
     local name = args[2]
     if (not name) then
         SetLootSpecialization(0)
@@ -35,7 +35,7 @@ this.functions = {
 --- Functions
 -- NOTE: What happens if I set each function as local? Does it matter since they're already stored in this?
 -- init_specializations iterate the number of available specs for the active char and adds each ID to the list of specs using the spec name as a key
-function this.init_specializations()
+function this:init_specializations()
     local i = 0
     while (i < GetNumSpecializations()) do
         local id, name = GetSpecializationInfo(i+1)
@@ -45,7 +45,7 @@ function this.init_specializations()
 end
 
 -- init_instances iterates every available instance of every available tier and adds them as lists of lists in the this.instances table 
-function this.init_instances()
+function this:init_instances()
     -- by_tier is a local function used to iterate every dungeon or raid of a given tier and return them as a table with the stored ID as a value and the name as a key
     local by_tier = function(tier, is_raid)
         -- sets the current tier to i in order to retrieve relevant instances
@@ -73,7 +73,7 @@ function this.init_instances()
     EJ_SelectTier(EJ_GetCurrentTier())
 end
 
-function this.SlashCommandHandler(cmd)
+function this:SlashCommandHandler(cmd)
     if (not cmd) then
         this.help()
     end
