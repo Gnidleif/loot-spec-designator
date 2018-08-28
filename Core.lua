@@ -3,16 +3,20 @@
 local this = CreateFrame('frame')
 this.specs = {} -- table containing available specs where [name] = id
 this.instances = {} -- table containing available instances where [tier][type][name] = id
+this.functions = {} -- table containing exported functions where [name] = func
 
 --- Exported functions
--- help prints a list of helpful tips on how to use the addon
-function this:help(args)
+--[[
+  These are all stored in the this.functions table and are called by the user through the mock "CLI"
+]]
+-- functions["help"] prints a list of helpful tips on how to use the addon
+this.functions["help"] = function(args)
     print("/lsd - brings up this help")
-    print("/lsd mode [name] - switch loot spec to [name], leave empty to match spec")
+    print("/lsd spec [name] - switch loot spec to [name], leave empty to match spec")
 end
 
--- set_mode changes the current loot spec
-function this:set_mode(args)
+-- functions["spec"] changes the current loot spec
+this.functions["spec"] = function(args)
     local name = args[2]
     if (not name) then
         SetLootSpecialization(0)
@@ -26,11 +30,11 @@ function this:set_mode(args)
     end
 end
 
--- functions is a local variable used to store functions exposed to the player
-this.functions = {
-    ["help"] = this.help,
-    ["mode"] = this.set_mode
-}
+this.functions["get"] = function(args)
+    local id = GetLootSpecialization()
+    local name = if id == 0 then 'auto' else select(2,(GetSpecializationInfo(id))) end
+    print("Loot Specialization is set to "..name)
+end
 
 --- Functions
 -- init_specializations iterate the number of available specs for the active char and adds each ID to the list of specs using the spec name as a key
@@ -67,17 +71,16 @@ function this:init_instances()
             dungeons = by_tier(i, false),
         }
     end
-    -- resets the selected tier to curren tier to avoid any bugs
-    EJ_SelectTier(EJ_GetCurrentTier())
+    -- resets the selected tier to last tier to avoid any bugs
+    EJ_SelectTier(EJ_GetNumTiers())
 end
 
 function this:SlashCommandHandler(cmd)
     if (not cmd) then
         this.help()
     end
-    -- make cmd lower case
-    cmd = string.lower(cmd)
     -- emulates a CLI by finding characters and adding them to a list of args which are then sent to the functions
+    cmd = string.lower(cmd)
     local args = {}
     for w in cmd:gmatch("%S+") do
         table.insert(args, w)
@@ -94,8 +97,8 @@ end
 
 --- Event handling
 --[[
-Checking of events should be in a descending order of commonality to do less average if-checks each time an event fires,
-this should not matter too much since if-checks are cheap and only a few events are registered to this
+  Checking of events should be in a descending order of commonality to do less average if-checks each time an event fires,
+    this should not matter too much since if-checks are cheap and only a few events are registered to this
 ]]
 this:RegisterEvent("PLAYER_LOOT_SPEC_UPDATED")
 this:RegisterEvent("PLAYER_LOGIN")
