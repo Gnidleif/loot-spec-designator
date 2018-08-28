@@ -18,7 +18,6 @@ function this.set_mode(args)
         SetLootSpecialization(0)
         return
     end
-
     index = this.specs[name]
     if (index) then
         SetLootSpecialization(index)
@@ -48,7 +47,9 @@ end
 -- init_instances iterates every available instance of every available tier and adds them as lists of lists in the this.instances table 
 function this.init_instances()
     -- by_tier is a local function used to iterate every dungeon or raid of a given tier and return them as a table with the stored ID as a value and the name as a key
-    local function by_tier(tier, is_raid)
+    local by_tier = function(tier, is_raid)
+        -- sets the current tier to i in order to retrieve relevant instances
+        EJ_SelectTier(tier)
         local instances = {}
         local i = 1
         while (true) do
@@ -64,11 +65,12 @@ function this.init_instances()
     -- for loop that iterates each tier
     for i = 1, EJ_GetNumTiers() do
         local tier = EJ_GetTierInfo(i)
-        EJ_SelectTier(i) -- sets the current tier to i in order to retrieve relevant instances
-        this.instances[tier] = {}
-        this.instances[tier]["raids"] = this.by_tier(i, true)
-        this.instances[tier]["dungeons"] = this.by_tier(i, false)
+        this.instances[tier] = {
+            raids = by_tier(i, true),
+            dungeons = by_tier(i, false),
+        }
     end
+    -- resets the selected tier to curren tier to avoid any bugs
     EJ_SelectTier(EJ_GetCurrentTier())
 end
 
