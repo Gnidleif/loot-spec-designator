@@ -4,4 +4,4 @@
 ## Version: 0.1
 ## DefaultState: enabled
 
-LootSpecDesignator.lua
+Core.lua

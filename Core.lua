@@ -21,7 +21,7 @@ function this.set_mode(args)
     if (index) then
         SetLootSpecialization(index)
     else
-        print("invalid mode name")
+        print("invalid specialization name")
     end
 end
 
