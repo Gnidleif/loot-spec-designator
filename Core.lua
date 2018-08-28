@@ -117,7 +117,7 @@ this:SetScript('OnEvent', function(self, event)
         this:init_specializations()
         this:init_instances()
         this:init_UI()
-        UIFrame:Hide()
+        UIFrame:Show()
     end
 end)
 
@@ -135,9 +135,22 @@ for i = 1, NUM_CHAT_WINDOWS do
 end
 
 ---- USER INTERFACE SECTION
+-- 3 = 2 specs + auto (50)
+-- 4 = 3 specs + auto (13)
+-- 5 = 4 specs + auto ()
+function this.create_button(parent, text, spacing)
+    local b = CreateFrame('Button', nil, parent, 'GameMenuButtonTemplate')
+    b:SetPoint('LEFT', parent, 'RIGHT', spacing, 0)
+    b:SetSize(60, 40)
+    b:SetText(text)
+    b:SetNormalFontObject('GameFontNormalLarge')
+    b:SetHighlightFontObject('GameFontHighlightLarge')
+    return b
+end
+
 function this.init_UI()
-    UIFrame:SetSize(300, 360)
-    UIFrame:SetPoint('CENTER', UIParent, 'CENTER')
+    UIFrame:SetSize(300, 80)
+    UIFrame:SetPoint('BOTTOMLEFT', UIParent, 'BOTTOMLEFT')
     UIFrame:SetMovable(true)
     UIFrame:EnableMouse(true)
     UIFrame:RegisterForDrag('LeftButton')
@@ -149,24 +162,13 @@ function this.init_UI()
     UIFrame.title:SetPoint('LEFT', UIFrame.TitleBg, 'LEFT', 5, 0)
     UIFrame.title:SetText('Loot Spec Designator')
 
-    UIFrame.saveBtn = CreateFrame('Button', nil, UIFrame, 'GameMenuButtonTemplate')
-    UIFrame.saveBtn:SetPoint('CENTER', UIFrame, 'TOP', 0, -70)
-    UIFrame.saveBtn:SetSize(140, 40)
-    UIFrame.saveBtn:SetText('Save')
-    UIFrame.saveBtn:SetNormalFontObject('GameFontNormalLarge')
-    UIFrame.saveBtn:SetHighlightFontObject('GameFontHighlightLarge')
+    UIFrame.btns = {}
+    UIFrame.btns[1] = this.create_button(UIFrame, 'Auto', 0)
+    UIFrame.btns[1]:SetPoint('LEFT', UIFrame, 'LEFT', 10, -10)
 
-    UIFrame.resetBtn = CreateFrame('Button', nil, UIFrame, 'GameMenuButtonTemplate')
-    UIFrame.resetBtn:SetPoint('TOP', UIFrame.saveBtn, 'BOTTOM', 0, -10)
-    UIFrame.resetBtn:SetSize(140, 40)
-    UIFrame.resetBtn:SetText('Reset')
-    UIFrame.resetBtn:SetNormalFontObject('GameFontNormalLarge')
-    UIFrame.resetBtn:SetHighlightFontObject('GameFontHighlightLarge')
-
-    UIFrame.loadBtn = CreateFrame('Button', nil, UIFrame, 'GameMenuButtonTemplate')
-    UIFrame.loadBtn:SetPoint('TOP', UIFrame.resetBtn, 'BOTTOM', 0, -10)
-    UIFrame.loadBtn:SetSize(140, 40)
-    UIFrame.loadBtn:SetText('Load')
-    UIFrame.loadBtn:SetNormalFontObject('GameFontNormalLarge')
-    UIFrame.loadBtn:SetHighlightFontObject('GameFontHighlightLarge')
+    local i = 2
+    for k, v in pairs(this.specs) do
+        UIFrame.btns[i] = this.create_button(UIFrame.btns[i-1], v, 13)
+        i = i + 1
+    end
 end
