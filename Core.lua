@@ -1,4 +1,4 @@
---[[ ADDON LOGIC ]]
+---- LOGIC SECTION
 --- Variables
 local this = CreateFrame('frame')
 this.specs = {} -- table containing available specs where [name] = id
@@ -33,7 +33,6 @@ this.functions = {
 }
 
 --- Functions
--- NOTE: What happens if I set each function as local? Does it matter since they're already stored in this?
 -- init_specializations iterate the number of available specs for the active char and adds each ID to the list of specs using the spec name as a key
 function this:init_specializations()
     local i = 0
@@ -53,7 +52,6 @@ function this:init_instances()
         local instances = {}
         local i = 1
         local id, name = EJ_GetInstanceByIndex(i, is_raid)
-        -- NOTE: not sure if "~= nil" is needed here
         while (id) do
             instances[name] = id
             i = i + 1
@@ -95,7 +93,10 @@ function this:SlashCommandHandler(cmd)
 end
 
 --- Event handling
--- NOTE: Checking of events should be in a descending order of commonality to do less average if-checks each time an event fires
+--[[
+Checking of events should be in a descending order of commonality to do less average if-checks each time an event fires,
+this should not matter too much since if-checks are cheap and only a few events are registered to this
+]]
 this:RegisterEvent("PLAYER_LOOT_SPEC_UPDATED")
 this:RegisterEvent("PLAYER_LOGIN")
 this:SetScript("OnEvent", function(self, event)
@@ -114,6 +115,7 @@ end)
 SLASH_LOOTSPECDESIGNATOR1 = "/lsd"
 SlashCmdList["LOOTSPECDESIGNATOR"] = this.SlashCommandHandler
 
+-- fast command to reload ui
 SLASH_RELOADUI1 = "/rl"
 SlashCmdList.RELOADUI = ReloadUI
 
@@ -124,9 +126,14 @@ SlashCmdList.FrameSTK = function()
   FrameStackTooltip_Toggle()
 end
 
+-- disables turning when pressing arrow keys (used for debugging)
 for i = 1, NUM_CHAT_WINDOWS do
   _G["ChatFrame"..i.."EditBox"]:SetAltArrowKeyMode(false)
 end
 ]]
 
--- [[ ADDON UI ]]
+---- UI SECTION
+--- Variables
+--- Exported functions
+--- Functions
+--- Event handling
