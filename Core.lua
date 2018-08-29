@@ -23,7 +23,7 @@ end
 
 function this:spec(self, args)
     local name = args[2]
-    if (not name) then
+    if (not name or name == 'auto') then
         SetLootSpecialization(0)
         return
     end
@@ -180,11 +180,17 @@ function this:init_UI(self)
 
     UIConfig.autoBtn = this.create_button(UIConfig, 'Auto', 0)
     UIConfig.autoBtn:SetPoint('LEFT', UIConfig, 'LEFT', 10, -10)
+    UIConfig.autoBtn:SetScript('OnClick', function(self, args)
+        this:spec('auto')
+    end)
 
     UIConfig.btns = {}
     local parent = UIConfig.autoBtn
     for k, v in pairs(this.specs) do
         UIConfig.btns[k] = this.create_button(parent, v, 15)
+        UIConfig.btns[k]:SetScript('OnClick', function(self, args)
+            this:spec(k)
+        end)
         parent = UIConfig.btns[k]
     end
 end
