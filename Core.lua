@@ -156,7 +156,12 @@ function this:init_UI(self)
     UIConfig:SetScript('OnDragStart', UIConfig.StartMoving)
     UIConfig:SetScript('OnDragStop', UIConfig.StopMovingOrSizing)
 
-    local create_button = function(parent, text, spacing)
+    UIConfig.title = UIConfig:CreateFontString(nil, 'OVERLAY')
+    UIConfig.title:SetFontObject('GameFontHighlight')
+    UIConfig.title:SetPoint('LEFT', UIConfig.TitleBg, 'LEFT', 5, 0)
+    UIConfig.title:SetText('Loot Spec Designator')
+
+    local create_spec_button = function(parent, text, spacing)
         local b = CreateFrame('Button', nil, parent, 'GameMenuButtonTemplate')
         b:SetPoint('LEFT', parent, 'RIGHT', spacing, 0)
         b:SetSize(60, 40)
@@ -165,13 +170,8 @@ function this:init_UI(self)
         b:SetHighlightFontObject('GameFontHighlightLarge')
         return b
     end
-    
-    UIConfig.title = UIConfig:CreateFontString(nil, 'OVERLAY')
-    UIConfig.title:SetFontObject('GameFontHighlight')
-    UIConfig.title:SetPoint('LEFT', UIConfig.TitleBg, 'LEFT', 5, 0)
-    UIConfig.title:SetText('Loot Spec Designator')
 
-    UIConfig.autoBtn = create_button(UIConfig, 'Auto', 0)
+    UIConfig.autoBtn = create_spec_button(UIConfig, 'Auto', 0)
     UIConfig.autoBtn:SetPoint('LEFT', UIConfig, 'LEFT', 10, -10)
     UIConfig.autoBtn:SetScript('OnClick', function(self, args)
         this:spec('auto')
@@ -180,7 +180,7 @@ function this:init_UI(self)
     UIConfig.btns = {}
     local parent = UIConfig.autoBtn
     for k, v in pairs(this.specs) do
-        UIConfig.btns[k] = create_button(parent, v, 15)
+        UIConfig.btns[k] = create_spec_button(parent, v, 15)
         UIConfig.btns[k]:SetScript('OnClick', function(self, args)
             this:spec(k)
         end)
