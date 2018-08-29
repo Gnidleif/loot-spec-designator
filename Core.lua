@@ -1,10 +1,8 @@
 ---- LOGIC SECTION
 --- Namespaces
-local _, core = ...
-core.Config = {}
+local this = CreateFrame('frame')
 
 --- Variables
-local this = core.Config
 local UIConfig
 this.specs = {} -- table containing available specs where [name] = id
 this.instances = {} -- table containing available instances where [tier][type][name] = id
@@ -14,43 +12,41 @@ this.functions = {} -- table containing exported functions where [name] = func
 --[[
   These are all stored in the this.functions table and are called by the user through the mock 'CLI'
 ]]
-this.functions['help'] = function(self, args)
+this.functions['help'] = function()
     print('/lsd help - brings up this help')
-    print('/lsd spec [name] - use to switch loot spec, empty -> auto')
     print('/lsd show - shows the main widget')
     print('/lsd hide - hides the main widget')
     print('/lsd toggle - hides or shows the main widget')
 end
 
-this.functions['spec'] = function(self, args)
-    local name = args[2]
-    if (not name or name == 'auto') then
-        SetLootSpecialization(0)
-        return
-    end
-    index = this.specs[name]
-    if (index) then
-        SetLootSpecialization(index)
-    else
-        print('invalid specialization name')
-    end
-end
-
-this.functions['show'] = function(self, args)
+this.functions['show'] = function()
     UIConfig:Show()
 end
 
-this.functions['hide'] = function(self, args)
+this.functions['hide'] = function()
     UIConfig:Hide()
 end
 
-this.functions['toggle'] = function(self, args)
+this.functions['toggle'] = function()
     UIConfig:SetShown(not UIConfig:IsShown())
 end
 
 --- Functions
+function this:set_spec(...)
+    local args = {...}
+    local name = args[1]
+    if (name == 'auto') then
+        SetLootSpecialization(0)
+        return
+    end
+    local id = this.specs[name]
+    if (id) then
+        SetLootSpecialization(id)
+    end
+end
+
 -- init_specializations iterate the number of available specs for the active char and adds each ID to the list of specs using the spec name as a key
-function this:init_specializations(self)
+function this:init_specializations()
     local i = 0
     while (i < GetNumSpecializations()) do
         local id, name = GetSpecializationInfo(i+1)
@@ -60,7 +56,7 @@ function this:init_specializations(self)
 end
 
 -- init_instances iterates every available instance of every available tier and adds them as lists of lists in the this.instances table 
-function this:init_instances(self)
+function this:init_instances()
     -- by_tier is a local function used to iterate every dungeon or raid of a given tier and return them as a table with the stored ID as a value and the name as a key
     local by_tier = function(tier, is_raid)
         -- sets the current tier to i in order to retrieve relevant instances
@@ -125,7 +121,7 @@ this:SetScript('OnEvent', function(self, event)
         this:init_specializations()
         this:init_instances()
         this:init_UI()
-        UIConfig:Show()
+        UIConfig:Hide()
     end
 end)
 
@@ -171,19 +167,18 @@ function this:init_UI(self)
         return b
     end
 
-    UIConfig.autoBtn = create_spec_button(UIConfig, 'Auto', 0)
-    UIConfig.autoBtn:SetPoint('LEFT', UIConfig, 'LEFT', 10, -10)
-    UIConfig.autoBtn:SetScript('OnClick', function(self, args)
-        this:spec('auto')
-    end)
-
     UIConfig.btns = {}
-    local parent = UIConfig.autoBtn
+    UIConfig.btns[0] = create_spec_button(UIConfig, 'Auto', 0)
+    UIConfig.btns[0]:SetPoint('LEFT', UIConfig, 'LEFT', 10, -10)
+    local parent = UIConfig.btns[0]
     for k, v in pairs(this.specs) do
-        UIConfig.btns[k] = create_spec_button(parent, v, 15)
-        UIConfig.btns[k]:SetScript('OnClick', function(self, args)
-            this:spec(k)
-        end)
+        UIConfig.btns[k] = create_spec_button(parent, v, 13)
         parent = UIConfig.btns[k]
+    end
+
+    for k, v in pairs(UIConfig.btns) do
+        UIConfig.btns[k]:SetScript('OnClick', function(self, args)
+            this:set_spec(k)
+        end)
     end
 end
