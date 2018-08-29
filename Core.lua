@@ -1,25 +1,27 @@
 ---- LOGIC SECTION
+--- Namespaces
+local _, core = ...
+core.Config = {}
+
 --- Variables
-local this = CreateFrame('Frame')
-local UIFrame = CreateFrame('Frame', 'LootSpecDesignator', UIParent, 'BasicFrameTemplateWithInset')
+local this = core.Config
+local UIConfig
 this.specs = {} -- table containing available specs where [name] = id
 this.instances = {} -- table containing available instances where [tier][type][name] = id
-this.functions = {} -- table containing exported functions where [name] = func
 
 --- Exported functions
 --[[
   These are all stored in the this.functions table and are called by the user through the mock 'CLI'
 ]]
--- functions['help'] prints a list of helpful tips on how to use the addon
-this.functions['help'] = function(args)
+function this:help(args)
     print('/lsd help - brings up this help')
     print('/lsd spec [name] - use to switch loot spec, empty -> auto')
     print('/lsd show - shows the main widget')
     print('/lsd hide - hides the main widget')
+    print('/lsd toggle - hides or shows the main widget')
 end
 
--- functions['spec'] changes the current loot spec
-this.functions['spec'] = function(args)
+function this:spec(self, args)
     local name = args[2]
     if (not name) then
         SetLootSpecialization(0)
@@ -33,16 +35,29 @@ this.functions['spec'] = function(args)
     end
 end
 
-this.functions['show'] = function(args)
-    UIFrame:Show()
+function this:show(self, args)
+    UIConfig:Show()
 end
 
-this.functions['hide'] = function(args)
-    UIFrame:Hide()
+function this:hide(self, args)
+    UIConfig:Hide()
 end
+
+function this:toggle(self, args)
+    UIConfig:SetShown(not UIConfig:IsShown())
+end
+
+this.functions = {
+    ['help'] = this:help,
+    ['spec'] = this:spec,
+    ['show'] = this:show,
+    ['hide'] = this:hide,
+    ['toggle'] = this:toggle,
+}
+
 --- Functions
 -- init_specializations iterate the number of available specs for the active char and adds each ID to the list of specs using the spec name as a key
-function this.init_specializations()
+function this:init_specializations(self)
     local i = 0
     while (i < GetNumSpecializations()) do
         local id, name = GetSpecializationInfo(i+1)
@@ -52,7 +67,7 @@ function this.init_specializations()
 end
 
 -- init_instances iterates every available instance of every available tier and adds them as lists of lists in the this.instances table 
-function this.init_instances()
+function this:init_instances(self)
     -- by_tier is a local function used to iterate every dungeon or raid of a given tier and return them as a table with the stored ID as a value and the name as a key
     local by_tier = function(tier, is_raid)
         -- sets the current tier to i in order to retrieve relevant instances
@@ -79,8 +94,8 @@ function this.init_instances()
     EJ_SelectTier(EJ_GetNumTiers())
 end
 
-function this.SlashCommandHandler(cmd)
-    if (not cmd) then
+function this:SlashCommandHandler(cmd)
+    if (#cmd == 0) then
         this.functions['help']()
         return
     end
@@ -117,7 +132,7 @@ this:SetScript('OnEvent', function(self, event)
         this:init_specializations()
         this:init_instances()
         this:init_UI()
-        UIFrame:Show()
+        UIConfig:Show()
     end
 end)
 
@@ -138,7 +153,7 @@ end
 -- 3 = 2 specs + auto (50)
 -- 4 = 3 specs + auto (13)
 -- 5 = 4 specs + auto ()
-function this.create_button(parent, text, spacing)
+function this:create_button(self, parent, text, spacing)
     local b = CreateFrame('Button', nil, parent, 'GameMenuButtonTemplate')
     b:SetPoint('LEFT', parent, 'RIGHT', spacing, 0)
     b:SetSize(60, 40)
@@ -148,27 +163,28 @@ function this.create_button(parent, text, spacing)
     return b
 end
 
-function this.init_UI()
-    UIFrame:SetSize(300, 80)
-    UIFrame:SetPoint('BOTTOMLEFT', UIParent, 'BOTTOMLEFT')
-    UIFrame:SetMovable(true)
-    UIFrame:EnableMouse(true)
-    UIFrame:RegisterForDrag('LeftButton')
-    UIFrame:SetScript('OnDragStart', UIFrame.StartMoving)
-    UIFrame:SetScript('OnDragStop', UIFrame.StopMovingOrSizing)
+function this:init_UI(self)
+    UIConfig = CreateFrame('Frame', 'LootSpecDesignator', UIParent, 'BasicFrameTemplateWithInset')
+    UIConfig:SetSize(300, 80) -- width needs to change depending on amount of specs
+    UIConfig:SetPoint('BOTTOMLEFT', UIParent, 'BOTTOMLEFT')
+    UIConfig:SetMovable(true)
+    UIConfig:EnableMouse(true)
+    UIConfig:RegisterForDrag('LeftButton')
+    UIConfig:SetScript('OnDragStart', UIConfig.StartMoving)
+    UIConfig:SetScript('OnDragStop', UIConfig.StopMovingOrSizing)
 
-    UIFrame.title = UIFrame:CreateFontString(nil, 'OVERLAY')
-    UIFrame.title:SetFontObject('GameFontHighlight')
-    UIFrame.title:SetPoint('LEFT', UIFrame.TitleBg, 'LEFT', 5, 0)
-    UIFrame.title:SetText('Loot Spec Designator')
+    UIConfig.title = UIConfig:CreateFontString(nil, 'OVERLAY')
+    UIConfig.title:SetFontObject('GameFontHighlight')
+    UIConfig.title:SetPoint('LEFT', UIConfig.TitleBg, 'LEFT', 5, 0)
+    UIConfig.title:SetText('Loot Spec Designator')
 
-    UIFrame.btns = {}
-    UIFrame.btns[1] = this.create_button(UIFrame, 'Auto', 0)
-    UIFrame.btns[1]:SetPoint('LEFT', UIFrame, 'LEFT', 10, -10)
+    UIConfig.autoBtn = this.create_button(UIConfig, 'Auto', 0)
+    UIConfig.autoBtn:SetPoint('LEFT', UIConfig, 'LEFT', 10, -10)
 
-    local i = 2
+    UIConfig.btns = {}
+    local parent = UIConfig.autoBtn
     for k, v in pairs(this.specs) do
-        UIFrame.btns[i] = this.create_button(UIFrame.btns[i-1], v, 13)
-        i = i + 1
+        UIConfig.btns[k] = this.create_button(parent, v, 15)
+        parent = UIConfig.btns[k]
     end
 end

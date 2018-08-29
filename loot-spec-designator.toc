@@ -3,5 +3,6 @@
 ## Author: Gnidleif
 ## Version: 0.1
 ## DefaultState: enabled
+## SavedVariables: LootSpecDesignatorDB
 
 Core.lua
