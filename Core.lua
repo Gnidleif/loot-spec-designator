@@ -94,7 +94,7 @@ function this:init_instances(self)
     EJ_SelectTier(EJ_GetNumTiers())
 end
 
-function this:SlashCommandHandler(cmd)
+local function SlashCommandHandler(cmd)
     if (#cmd == 0) then
         this.functions['help']()
         return
@@ -138,7 +138,7 @@ end)
 
 --- Slash recognition
 SLASH_LOOTSPECDESIGNATOR1 = '/lsd'
-SlashCmdList['LOOTSPECDESIGNATOR'] = this.SlashCommandHandler
+SlashCmdList['LOOTSPECDESIGNATOR'] = SlashCommandHandler
 
 -- fast command to reload ui
 SLASH_RELOADUI1 = '/rl'
