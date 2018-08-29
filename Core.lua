@@ -8,12 +8,13 @@ local this = core.Config
 local UIConfig
 this.specs = {} -- table containing available specs where [name] = id
 this.instances = {} -- table containing available instances where [tier][type][name] = id
+this.functions = {} -- table containing exported functions where [name] = func
 
 --- Exported functions
 --[[
   These are all stored in the this.functions table and are called by the user through the mock 'CLI'
 ]]
-function this:help(args)
+this.functions['help'] = function(self, args)
     print('/lsd help - brings up this help')
     print('/lsd spec [name] - use to switch loot spec, empty -> auto')
     print('/lsd show - shows the main widget')
@@ -21,7 +22,7 @@ function this:help(args)
     print('/lsd toggle - hides or shows the main widget')
 end
 
-function this:spec(self, args)
+this.functions['spec'] = function(self, args)
     local name = args[2]
     if (not name or name == 'auto') then
         SetLootSpecialization(0)
@@ -35,25 +36,17 @@ function this:spec(self, args)
     end
 end
 
-function this:show(self, args)
+this.functions['show'] = function(self, args)
     UIConfig:Show()
 end
 
-function this:hide(self, args)
+this.functions['hide'] = function(self, args)
     UIConfig:Hide()
 end
 
-function this:toggle(self, args)
+this.functions['toggle'] = function(self, args)
     UIConfig:SetShown(not UIConfig:IsShown())
 end
-
-this.functions = {
-    ['help'] = this:help,
-    ['spec'] = this:spec,
-    ['show'] = this:show,
-    ['hide'] = this:hide,
-    ['toggle'] = this:toggle,
-}
 
 --- Functions
 -- init_specializations iterate the number of available specs for the active char and adds each ID to the list of specs using the spec name as a key
@@ -153,16 +146,6 @@ end
 -- 3 = 2 specs + auto (50)
 -- 4 = 3 specs + auto (13)
 -- 5 = 4 specs + auto ()
-function this:create_button(self, parent, text, spacing)
-    local b = CreateFrame('Button', nil, parent, 'GameMenuButtonTemplate')
-    b:SetPoint('LEFT', parent, 'RIGHT', spacing, 0)
-    b:SetSize(60, 40)
-    b:SetText(text)
-    b:SetNormalFontObject('GameFontNormalLarge')
-    b:SetHighlightFontObject('GameFontHighlightLarge')
-    return b
-end
-
 function this:init_UI(self)
     UIConfig = CreateFrame('Frame', 'LootSpecDesignator', UIParent, 'BasicFrameTemplateWithInset')
     UIConfig:SetSize(300, 80) -- width needs to change depending on amount of specs
@@ -173,12 +156,22 @@ function this:init_UI(self)
     UIConfig:SetScript('OnDragStart', UIConfig.StartMoving)
     UIConfig:SetScript('OnDragStop', UIConfig.StopMovingOrSizing)
 
+    local create_button = function(parent, text, spacing)
+        local b = CreateFrame('Button', nil, parent, 'GameMenuButtonTemplate')
+        b:SetPoint('LEFT', parent, 'RIGHT', spacing, 0)
+        b:SetSize(60, 40)
+        b:SetText(text)
+        b:SetNormalFontObject('GameFontNormalLarge')
+        b:SetHighlightFontObject('GameFontHighlightLarge')
+        return b
+    end
+    
     UIConfig.title = UIConfig:CreateFontString(nil, 'OVERLAY')
     UIConfig.title:SetFontObject('GameFontHighlight')
     UIConfig.title:SetPoint('LEFT', UIConfig.TitleBg, 'LEFT', 5, 0)
     UIConfig.title:SetText('Loot Spec Designator')
 
-    UIConfig.autoBtn = this.create_button(UIConfig, 'Auto', 0)
+    UIConfig.autoBtn = create_button(UIConfig, 'Auto', 0)
     UIConfig.autoBtn:SetPoint('LEFT', UIConfig, 'LEFT', 10, -10)
     UIConfig.autoBtn:SetScript('OnClick', function(self, args)
         this:spec('auto')
@@ -187,7 +180,7 @@ function this:init_UI(self)
     UIConfig.btns = {}
     local parent = UIConfig.autoBtn
     for k, v in pairs(this.specs) do
-        UIConfig.btns[k] = this.create_button(parent, v, 15)
+        UIConfig.btns[k] = create_button(parent, v, 15)
         UIConfig.btns[k]:SetScript('OnClick', function(self, args)
             this:spec(k)
         end)
