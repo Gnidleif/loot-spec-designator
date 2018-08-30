@@ -56,14 +56,34 @@ function this:init_specializations()
     end
 end
 
+function this:distance2d_squared(x1, y1, x2, y2)
+    return abs(x2 - x1)^2 + abs(y2 - y1)^2
+end
+
+-- identify_encounter finds the encounter that's currently closest to the player, if no encounter is close to the player nil is returned
+function this:identify_encounter()
+    SetMapToCurrentZone()
+    local px, py = GetPlayerMapPosition('player')
+    local i, distance_lowest, distance_current = 1, 1, 1
+    local x, y, _, _, _, id = EJ_GetMapEncounter(i)
+    local closest_encounter
+    while (id) do
+        distance_current = this.distance2d_squared(px, py, x, 1-y)
+        if distance_current < distance_lowest then
+            distance_lowest = distance_current
+            closest_encounter = id
+        end
+        i = i + 1
+        x, y, _, _, _, id = EJ_GetMapEncounter(i)
+    end
+    return this.encounters[closest_encounter]
+end
+
 function this:init_encounters(instance)
     local i = 1
     local name, _, id = EJ_GetEncounterInfoByIndex(instance, i)
     while (id) do
-        this.encounters[id] = {
-            mode = 'auto',
-            name = name,
-        }
+        this.encounters[id] = 'none'
         i = i + 1
         name, _, id = EJ_GetEncounterInfoByIndex(instance, i)
     end
@@ -120,12 +140,10 @@ local function SlashCommandHandler(cmd)
 end
 
 --- Event handling
---[[
-  Checking of events should be in a descending order of commonality to do less average if-checks each time an event fires,
-    this should not matter too much since if-checks are cheap and only a few events are registered to this
-]]
 this:RegisterEvent('PLAYER_LOOT_SPEC_UPDATED')
 this:RegisterEvent('PLAYER_LOGIN')
+this:RegisterEvent('PLAYER_REGEN_DISABLED')
+this:RegisterEvent('PLAYER_REGEN_ENABLED')
 this:SetScript('OnEvent', function(self, event, ...)
     if event == 'PLAYER_LOOT_SPEC_UPDATED' then
         local id = GetLootSpecialization()
@@ -133,10 +151,24 @@ this:SetScript('OnEvent', function(self, event, ...)
             SendSystemMessage('Loot Specialization set to: Auto')
         end
     elseif event == 'PLAYER_LOGIN' then
+        this.old_loot_spec = GetLootSpecialization()
         this:init_specializations()
         this:init_instances()
         this:init_UI()
         UIConfig:Show()
+    elseif event == 'PLAYER_REGEN_DISABLED' then
+        SendSystemMessage('Entered combat...')
+        mode = this.identify_encounter()
+        if (not mode or mode == 'none') then
+            return
+        end
+        this.old_loot_spec = GetLootSpecialization()
+        this.set_spec(mode)
+    elseif event == 'PLAYER_REGEN_ENABLED' then
+        if this.old_loot_spec != GetLootSpecialization() then
+            this.SetLootSpecialization(this.old_loot_spec)
+        end
+        SendSystemMessage('Exited combat...')
     end
 end)
 
