@@ -6,6 +6,7 @@ local this = CreateFrame('frame')
 local UIConfig
 this.specs = {} -- table containing available specs where [name] = id
 this.instances = {} -- table containing available instances where [tier][type][name] = id
+this.encounters = {} -- table containing all available instance encounters where [name] = {mode, id}
 this.functions = {} -- table containing exported functions where [name] = func
 
 --- Exported functions
@@ -55,6 +56,19 @@ function this:init_specializations()
     end
 end
 
+function this:init_encounters(instance)
+    local i = 1
+    local name, _, id = EJ_GetEncounterInfoByIndex(instance, i)
+    while (id) do
+        this.encounters[id] = {
+            mode = 'auto',
+            name = name,
+        }
+        i = i + 1
+        name, _, id = EJ_GetEncounterInfoByIndex(instance, i)
+    end
+end
+
 -- init_instances iterates every available instance of every available tier and adds them as lists of lists in the this.instances table 
 function this:init_instances()
     -- by_tier is a local function used to iterate every dungeon or raid of a given tier and return them as a table with the stored ID as a value and the name as a key
@@ -66,6 +80,7 @@ function this:init_instances()
         local id, name = EJ_GetInstanceByIndex(i, is_raid)
         while (id) do
             instances[name] = id
+            this.init_encounters(id)
             i = i + 1
             id, name = EJ_GetInstanceByIndex(i, is_raid)
         end
@@ -111,7 +126,7 @@ end
 ]]
 this:RegisterEvent('PLAYER_LOOT_SPEC_UPDATED')
 this:RegisterEvent('PLAYER_LOGIN')
-this:SetScript('OnEvent', function(self, event)
+this:SetScript('OnEvent', function(self, event, ...)
     if event == 'PLAYER_LOOT_SPEC_UPDATED' then
         local id = GetLootSpecialization()
         if (id == 0) then
@@ -139,9 +154,7 @@ for i = 1, NUM_CHAT_WINDOWS do
 end
 
 ---- USER INTERFACE SECTION
--- 3 = 2 specs + auto (50)
--- 4 = 3 specs + auto (13)
--- 5 = 4 specs + auto ()
+-- init-UI initializes all of the UI elements
 function this:init_UI(self)
     local w = (65 * (GetNumSpecializations() + 1)) + 15
     UIConfig = CreateFrame('Frame', 'LootSpecDesignator', UIParent, 'BasicFrameTemplateWithInset')
@@ -178,7 +191,7 @@ function this:init_UI(self)
     end
 
     for k, v in pairs(UIConfig.btns) do
-        UIConfig.btns[k]:SetScript('OnClick', function(self, args)
+        UIConfig.btns[k]:SetScript('OnClick', function(self, args, ...)
             this:set_spec(k)
         end)
     end
