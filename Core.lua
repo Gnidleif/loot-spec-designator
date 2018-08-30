@@ -115,13 +115,13 @@ this:SetScript('OnEvent', function(self, event)
     if event == 'PLAYER_LOOT_SPEC_UPDATED' then
         local id = GetLootSpecialization()
         if (id == 0) then
-            print('Loot Specialization now matches your specialization')
+            SendSystemMessage('Loot Specialization set to: Auto')
         end
     elseif event == 'PLAYER_LOGIN' then
         this:init_specializations()
         this:init_instances()
         this:init_UI()
-        UIConfig:Hide()
+        UIConfig:Show()
     end
 end)
 
@@ -143,9 +143,10 @@ end
 -- 4 = 3 specs + auto (13)
 -- 5 = 4 specs + auto ()
 function this:init_UI(self)
+    local w = (65 * (GetNumSpecializations() + 1)) + 15
     UIConfig = CreateFrame('Frame', 'LootSpecDesignator', UIParent, 'BasicFrameTemplateWithInset')
-    UIConfig:SetSize(300, 80) -- width needs to change depending on amount of specs
-    UIConfig:SetPoint('BOTTOMLEFT', UIParent, 'BOTTOMLEFT')
+    UIConfig:SetSize(w, 80) -- width needs to change depending on amount of specs
+    UIConfig:SetPoint('CENTER', UIParent, 'CENTER')
     UIConfig:SetMovable(true)
     UIConfig:EnableMouse(true)
     UIConfig:RegisterForDrag('LeftButton')
@@ -168,11 +169,11 @@ function this:init_UI(self)
     end
 
     UIConfig.btns = {}
-    UIConfig.btns[0] = create_spec_button(UIConfig, 'Auto', 0)
-    UIConfig.btns[0]:SetPoint('LEFT', UIConfig, 'LEFT', 10, -10)
-    local parent = UIConfig.btns[0]
+    UIConfig.btns['auto'] = create_spec_button(UIConfig, 'Auto', 0)
+    UIConfig.btns['auto']:SetPoint('LEFT', UIConfig, 'LEFT', 8, -10)
+    local parent = UIConfig.btns['auto']
     for k, v in pairs(this.specs) do
-        UIConfig.btns[k] = create_spec_button(parent, v, 13)
+        UIConfig.btns[k] = create_spec_button(parent, v, 5)
         parent = UIConfig.btns[k]
     end
 
