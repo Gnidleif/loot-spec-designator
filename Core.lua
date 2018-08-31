@@ -183,7 +183,7 @@ end
 ---- USER INTERFACE SECTION
 -- init-UI initializes all of the UI elements
 function this:init_UI(self)
-    local w = (65 * (GetNumSpecializations() + 1)) + 15
+    local w = (65 * (GetNumSpecializations() + 1)) + 16
     UIConfig = CreateFrame('Frame', 'LootSpecDesignator', UIParent, 'BasicFrameTemplateWithInset')
     UIConfig:SetSize(w, 80) -- width needs to change depending on amount of specs
     UIConfig:SetPoint('CENTER', UIParent, 'CENTER')
