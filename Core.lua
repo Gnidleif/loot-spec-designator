@@ -198,28 +198,25 @@ function this:init_UI(self)
     UIConfig.title:SetPoint('LEFT', UIConfig.TitleBg, 'LEFT', 5, 0)
     UIConfig.title:SetText('Loot Spec Designator')
 
-    local create_spec_button = function(parent, text, spacing)
+    local create_spec_button = function(parent, key, text, spacing)
         local b = CreateFrame('Button', nil, parent, 'GameMenuButtonTemplate')
         b:SetPoint('LEFT', parent, 'RIGHT', spacing, 0)
         b:SetSize(60, 40)
         b:SetText(text)
         b:SetNormalFontObject('GameFontNormalLarge')
         b:SetHighlightFontObject('GameFontHighlightLarge')
+        b:SetScript('OnClick', function(self, args, ...)
+            this:set_spec(key)
+        end)
         return b
     end
 
     UIConfig.btns = {}
-    UIConfig.btns['auto'] = create_spec_button(UIConfig, 'Auto', 0)
+    UIConfig.btns['auto'] = create_spec_button(UIConfig, 'auto', 'Auto', 0)
     UIConfig.btns['auto']:SetPoint('LEFT', UIConfig, 'LEFT', 8, -10)
     local parent = UIConfig.btns['auto']
     for k, v in pairs(this.specs) do
-        UIConfig.btns[k] = create_spec_button(parent, v, 5)
+        UIConfig.btns[k] = create_spec_button(parent, k, v, 5)
         parent = UIConfig.btns[k]
-    end
-
-    for k, v in pairs(UIConfig.btns) do
-        UIConfig.btns[k]:SetScript('OnClick', function(self, args, ...)
-            this:set_spec(k)
-        end)
     end
 end
