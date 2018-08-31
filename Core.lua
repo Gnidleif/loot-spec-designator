@@ -15,21 +15,16 @@ this.functions = {} -- table containing exported functions where [name] = func
 ]]
 this.functions['help'] = function()
     print('/lsd help - brings up this help')
-    print('/lsd show - shows the main widget')
-    print('/lsd hide - hides the main widget')
     print('/lsd toggle - hides or shows the main widget')
-end
-
-this.functions['show'] = function()
-    UIConfig:Show()
-end
-
-this.functions['hide'] = function()
-    UIConfig:Hide()
 end
 
 this.functions['toggle'] = function()
     UIConfig:SetShown(not UIConfig:IsShown())
+end
+
+this.functions['spec'] = function(...)
+    args = {...}
+    this:set_spec(args[2])
 end
 
 --- Functions
